@@ -1,0 +1,40 @@
+{% extends 'inventory/main.html' %} {% load static %} {% block content %}
+
+<br />
+{% if form.errors %}
+  {% for field in form %}
+    {% for error in field.errors %}
+      <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+      </div>
+    {% endfor %}
+  {% endfor %}
+  {% for error in form.non_field_errors %}
+    <div class="alert alert-danger">
+      <strong>{{ error|escape }}</strong>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="row">
+  <div class="col-md 6">
+    <div class="card card-body">
+      <form action="" method="POST">
+        {% csrf_token %}
+        <div class="container">
+          <div class="row">
+            {% for field in form %}
+            <div class="col-sm-5"><b>{{ field.label_tag }}</b> {{ field }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <input type="submit" name="Submit" />
+      </form>
+      {% for message in messages %}
+      <p id="messages">{{message}}</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

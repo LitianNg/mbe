@@ -1,0 +1,83 @@
+{%  extends 'inventory/main.html' %}
+
+{% block content %}
+
+	<br>
+
+<div class="row">
+	<div class="col-md">
+		<div class="card card-body">
+			<h5>{{seller.name}}</h5>
+			<hr>
+			<a class="btn btn-outline-info  btn-sm btn-block" href="{% url 'update_seller' seller.user_id %}">Update Seller</a>
+			<a class="btn btn-outline-danger  btn-sm btn-block" href="{% url 'delete_seller' seller.user_id %}">Delete Seller</a>
+
+		</div>
+	</div>
+
+	<div class="col-md">
+		<div class="card card-body">
+			<h5>Contact Information</h5>
+			<hr>
+			<p>Email: {{seller.email}} </p>
+			<p>Phone: {{seller.phone}}</p>
+		</div>
+	</div>
+
+	<div class="col-md">
+		<div class="card card-body">
+			<h5>Total Orders</h5>
+			<hr>
+			<h1 style="text-align: center;padding: 10px">{{order_count}}</h1>
+		</div>
+	</div>
+</div>
+
+
+<br>
+<div class="row">
+	<div class="col">
+		<div class="card card-body">
+			<form method="get">
+			{{myFilter.form}}
+		    <button class="btn btn-primary" type="submit">Search</button>
+		  </form>
+		</div>
+	</div>
+	
+</div>
+<br>
+
+<div class="row">
+	<div class="col-md">
+		<div class="card card-body">
+			<table class="table table-sm">
+				<tr>
+					<th>Date</th>
+					<th>Order ID</th>
+					<th>AWB</th>
+					<th>Courier</th>
+					<th>Status</th>
+					
+					
+				</tr>
+
+				{% for order in orders %}
+				<tr>
+					<td>{{order.date_created}}</td>
+					<td>{{order.order_id}}</td>
+					<td>{{order.awb}}</td>
+					<td>{{order.courier}}</td>
+					<td>{{order.status}}</td>
+					
+					
+				</tr>
+
+				{% endfor %}
+
+			</table>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

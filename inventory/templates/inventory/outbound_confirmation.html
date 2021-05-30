@@ -1,0 +1,54 @@
+{% extends 'inventory/main.html' %} {% load static %} {% block content %}
+
+<br />
+{% if form.errors %} {% for field in form %} {% for error in field.errors %}
+<div class="alert alert-danger">
+  <strong>{{ error|escape }}</strong>
+</div>
+{% endfor %} {% endfor %} {% for error in form.non_field_errors %}
+<div class="alert alert-danger">
+  <strong>{{ error|escape }}</strong>
+</div>
+{% endfor %} {% endif %}
+
+<div class="row">
+  <div class="col-md 6">
+    <div class="card card-body">
+      {% if form is None %}
+      <p>
+        Are you sure want to {{type}}
+        <span style="font-weight: bold">{{outbound.product.product_name}}</span> outbound request from <span style="font-weight: bold">{{outbound.seller.name}}</span>?
+      </p>
+      <form action="" method="POST">
+        {% csrf_token %}
+        <input class="btn btn-danger" type="submit" value="Confirm"/>
+        <a class="btn btn-warning" href="{% url 'outbound' %}">Cancel</a>
+      </form>
+
+      {%else%}
+      <p>
+        By approving this outbound request, we will automatically create a new order of
+        <span style="font-weight: bold">{{outbound.product.product_name}}</span>, please fill in the order details.
+      </p>
+      <form action="" method="POST">
+        {% csrf_token %}
+        <div class="container">
+          <div class="row">
+            {% for field in form %}
+            <div class="col-sm-5"><b>{{ field.label_tag }}</b> {{ field }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <input class="btn btn-danger" type="submit" name="Confirm" />
+        <a class="btn btn-warning" href="{% url 'outbound' %}">Cancel</a>
+      </form>
+      {%endif%}
+      
+      {% for message in messages %}
+      <p id="messages">{{message}}</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

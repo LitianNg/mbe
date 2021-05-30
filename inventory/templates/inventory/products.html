@@ -1,0 +1,75 @@
+{% extends 'inventory/main.html' %}
+
+{% block content %}
+
+
+<div class="row">
+	<div class="col-md">
+		<div class="card card-body">
+			<h3>Product</h3>
+			<form method="get">
+				{{myFilter.form}}
+				<button class="btn btn-primary" type="submit">Search</button>
+			</form>
+		</div>
+		<!-- 		Hidden Form to apply filters to pdf -->
+		<form method="post" action="{% url 'pdf_product' %}" target="_blank">
+			{% csrf_token %}
+			<input type="hidden" name="sku_code" value="{{sku_code}}">
+			<input type="hidden" name="product_name" value="{{product_name}}">
+			<input type="hidden" name="seller" value="{{seller}}">
+			<input type="submit" class="btn btn-secondary float-right" value="Export PDF">
+		</form>
+		
+		<br>
+		<br>
+		<a class="btn btn-primary btn-sm btn-block" href="{% url 'create_product' %}">Create New Products</a>
+		<div class="card card-body">
+
+			<table class="table">
+				<tr>
+					<th>Codes</th>
+					<th>Product Name</th>
+					<th>Location</th>
+					<th>Rack</th>
+					<th>Pallet</th>
+					<th>Units</th>
+					<th>Qty</th>
+					<th>Seller</th>
+					<th>Edit Quantity</th>
+					<th>Update</th>
+					<th>Delete</th>
+				</tr>
+
+				{% for product in products %}
+				<tr>
+					<td>{{product.sku_code}}</td>
+					<td>{{product.product_name}}</td>
+					<td>{{product.location}}</td>
+					<td>{{product.rack}}</td>
+					<td>{{product.pallet}}</td>
+					<td>{{product.unit}}</td>
+					<td>{{product.product_quantity}}</td>
+					<td>{{product.seller.user}}</td>
+					<td><a class="btn btn-sm btn-info" href="{% url 'edit_product_qty' product.sku_code %}">Edit</a></td>
+					<td><a class="btn btn-sm btn-info" href="{% url 'update_product' product.sku_code %}">Update</a>
+					</td>
+					{% if not product.order_set.all %}
+					<td><a class="btn btn-sm btn-danger" href="{% url 'delete_product' product.sku_code %}">Delete</a>
+					</td>
+					{% else %}
+					<td></td>
+					{% endif %}
+					
+				</tr>
+
+				{% endfor %}
+
+			</table>
+		    {% include 'inventory/pagination.html' with page_obj=products request=request only%}
+		</div>
+	</div>
+
+</div>
+
+{% endblock content %}

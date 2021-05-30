@@ -1,0 +1,125 @@
+{% extends 'inventory/main.html' %}
+
+{% block content %}
+
+{% if user.is_authenticated and user.is_admin %}
+<div class="row">
+	<div class="col-md">
+
+		<div class="card card-body">
+            <h3>Inbound</h3>
+            <form method="get">
+                {{myFilter.form}}
+                <button class="btn btn-primary" type="submit">Search</button>
+            </form>
+		</div>
+		<!-- 		Hidden Form to apply filters to pdf -->
+		<form method="post" action="{% url 'pdf_inbound' %}" target="_blank">
+			{% csrf_token %}
+			<input type="hidden" name="product_name" value="{{product_name}}">
+            <input type="hidden" name="seller_name" value="{{seller}}">
+			<input type="hidden" name="status" value="{{status}}">
+			<input type="submit" class="btn btn-secondary float-right" value="Export PDF">
+		</form>
+        
+		<br>
+		<br>
+		<div class="card card-body">
+			<table class="table">
+				<tr>
+					<th>Date</th>
+                    <th>Seller</th>
+					<th>Product Name</th>
+                    <th>Unit</th>
+                    <th>Product Quantity</th>
+					<th>Product Price</th>
+					<th>Remarks</th>
+					<th>Status</th>
+                    {% if status == "Pending" or 'status' not in request %}
+                    <th>Approve</th>
+                    <th>Reject</th>
+                    {% endif %}
+				</tr>
+
+				{% for inbound in inbounds %}
+				<tr>
+                    <td>{{inbound.date_created}}</td>
+                    <td>{{inbound.seller.name}}</td>
+                    <td>{{inbound.product_name}}</td>
+                    <td>{{inbound.unit}}</td>
+                    <td>{{inbound.product_quantity}}</td>
+                    <td>{{inbound.product_price}}</td>
+                    <td>{{inbound.remarks}}</td>
+                    <td>{{inbound.status}}</td>
+                    {% if inbound.status == "Pending" %}
+                    <td><a class="btn btn-sm btn-success" href="{% url 'approve_inbound' inbound.pk%}">Approve</a>
+                    <td><a class="btn btn-sm btn-danger" href="{% url 'reject_inbound' inbound.pk%}">Reject</a>
+					{% else %}
+					<td></td>
+					<td></td>
+                    {% endif %}
+				</tr>
+
+				{% endfor %}
+
+			</table>
+			{% include 'inventory/pagination.html' with page_obj=inbounds request=request only%}
+		</div>
+	</div>
+
+</div>
+{% else %}
+<div class="row">
+	<div class="col-md">
+
+		<div class="card card-body">
+            <h3>Inbound</h3>
+            <form method="get">
+                {{myFilter.form}}
+                <button class="btn btn-primary" type="submit">Search</button>
+            </form>
+		</div>
+		<!-- 		Hidden Form to apply filters to pdf -->
+		<form method="post" action="{% url 'pdf_inbound' %}" target="_blank">
+			{% csrf_token %}
+			<input type="hidden" name="product_name" value="{{product_name}}">
+			<input type="hidden" name="status" value="{{status}}">
+			<input type="submit" class="btn btn-secondary float-right" value="Export PDF">
+		</form>
+        
+		<br>
+		<br>
+        <a class="btn btn-primary btn-sm btn-block" href="{% url 'create_inbound' %}">Create New Inbound</a>
+		<div class="card card-body">
+			<table class="table">
+				<tr>
+					<th>Date</th>
+					<th>Product Name</th>
+                    <th>Unit</th>
+                    <th>Product Quantity</th>
+					<th>Product Price</th>
+					<th>Remarks</th>
+					<th>Status</th>
+				</tr>
+
+				{% for inbound in inbounds %}
+				<tr>
+                    <td>{{inbound.date_created}}</td>
+                    <td>{{inbound.product_name}}</td>
+                    <td>{{inbound.unit}}</td>
+                    <td>{{inbound.product_quantity}}</td>
+                    <td>{{inbound.product_price}}</td>
+                    <td>{{inbound.remarks}}</td>
+                    <td>{{inbound.status}}</td>
+				</tr>
+
+				{% endfor %}
+
+			</table>
+			{% include 'inventory/pagination.html' with page_obj=inbounds request=request only%}
+		</div>
+	</div>
+
+</div>
+{% endif %}
+{% endblock content %}

@@ -1,0 +1,53 @@
+{% extends 'inventory/main.html' %}
+
+{% block content %}
+
+{% include 'inventory/status.html' %}
+
+<br>
+
+<div class="row">
+    <div class="col-md">
+
+
+        <div class="card card-body">
+
+            <table class="table">
+                <tr>
+                    <th>Codes</th>
+                    <th>Product Name</th>
+                    <th>Location</th>
+                    <th>Rack</th>
+                    <th>Pallet</th>
+                    <th>Units</th>
+                    <th>Orders</th>
+                    <th>Stock</th>
+                    <th>Seller</th>
+
+
+                </tr>
+
+                {% for product in products %}
+                <tr>
+                    <td>{{product.sku_code}}</td>
+                    <td>{{product.product_name}}</td>
+                    <td>{{product.location}}</td>
+                    <td>{{product.rack}}</td>
+                    <td>{{product.pallet}}</td>
+                    <td>{{product.unit}}</td>
+                    <td>{{product.order_set.all.count}}</td>
+                    <td>{{product.product_quantity}}</td>
+                    <td>{{product.seller.name}}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+            {% include 'inventory/pagination.html' with page_obj=products request=request only%}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

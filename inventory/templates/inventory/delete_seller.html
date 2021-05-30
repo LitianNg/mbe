@@ -1,0 +1,23 @@
+{%  extends 'inventory/main.html' %}
+{% load static %}
+{% block content %}
+
+<br>
+<div class="row">
+    <div class="col-md 6">
+        <div class="card card-body">
+
+            <p>Are you sure want to delete "{{seller}}"</p>
+
+            <form action = "{% url 'delete_seller' seller.user_id %}" method = "POST">
+                {% csrf_token %}
+                <input class="btn btn-danger" type="submit" name="Confirm">
+                <a class="btn btn-warning" href="{% url 'seller_order' seller.user_id %}">Cancel</a>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

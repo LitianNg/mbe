@@ -1,0 +1,40 @@
+body {
+  background-color: #ebeff5;
+}
+
+#total-stock {
+  background-color: #2bd176;
+}
+
+#orders-delivered {
+  background-color: #2abbd8;
+}
+
+#orders-pending {
+  background-color: #e25864;
+}
+
+.hidden {
+  display: none;
+}
+
+.input-table tbody tr td {
+  padding: 0.1rem;
+  border: none;
+}
+.select2-container {
+  width: 100% !important;
+}
+.select2-selection {
+  height: calc(1.5em + .75rem + 2px) !important;
+  padding-top: 2px;
+}
+.select2-selection__arrow{
+  top: 3px !important;
+}
+/* #select2-data-42-hflk .select2-container {
+  width: 160px !important;
+} */
+.input-table > tbody > tr > td > .btn-danger {
+  padding: 0.45rem 0.35rem;
+}

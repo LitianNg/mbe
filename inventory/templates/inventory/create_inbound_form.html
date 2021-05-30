@@ -1,0 +1,187 @@
+{% extends 'inventory/main.html' %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md">
+
+		<div class="card card-body">
+            <h3>Inbound</h3>
+            <!-- Hidden Form to add new product -->
+            <form method="GET" action="{% url 'create_np_inbound' %}">
+			    {% csrf_token %}
+			    <input type="submit" class="btn btn-primary float-right" value="New Product">
+		    </form>
+		</div>
+		<br>
+		<br>
+    <div class="col-md 6">
+      <div class="card card-body">
+       <!--  TODO: add form errors, add general errors, fix design -->
+       <!-- test for: missing required input, too much quantity, order exists -->
+        <form action="" method="POST" autocomplete="off">
+          {% csrf_token %}
+          <div class="tableFixHead">
+          <table class="table input-table">
+            <thead>
+              <tr>
+                {% for form in formset %}
+                  {% if forloop.first %}
+                    {% for field in form  %}
+                      <th scope="col">{{field.label_tag}}</th>
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody class="">
+              {{ formset.management_form }}
+              {% for form in formset %}
+                {% if not form.DELETE.value %}
+                  <tr>
+                    {% for field in form  %}
+                      {% if not forloop.last %}
+                        {% if field.errors %}
+                          <td class="highlight-red">
+                            <div class="tooltip">
+                              <span class="tooltiptext">
+                                {% for error in field.errors %}
+                                  {{error}}
+                                {% endfor %}
+                              </span>
+                            </div>
+                            {{ field }}
+                          </td>
+                        {% else %}
+                          <td>{{ field }}</td>
+                        {% endif %}
+                      {% else %}
+                        <td class="text-center"> <div class="hidden">{{ field }}</div><button  class="btn btn-sm btn-danger" name='del_button' type="button" onclick="del_row(this)"><i class="fa fa-trash-alt"></i> Delete</button></td>
+                      {% endif %}
+                    {% endfor %}
+                  </tr>
+                {% endif %}
+              
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-3">
+          <input class="btn btn-success" type="submit" name="Submit">
+          <button class="btn btn-primary" type="button" id="add_more"><i class="fa fa-fw fa-plus-circle"></i> Add More</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript">
+   
+    $('#add_more').click(function() {
+      cloneMore('.table tbody tr:last', 'form');
+    });
+    
+    function cloneMore(selector, type) {
+      var newElement = $(selector).clone(true);
+      var total = $('#id_' + type + '-TOTAL_FORMS').val();
+      newElement.find(':input').each(function() {
+        var name = $(this).attr('name').replace('-' + (total-1) + '-','-' + total + '-');
+        var id = 'id_' + name;
+        $(this).attr({'name': name, 'id': id}).val('').removeAttr('checked');
+      });
+      newElement.find('label').each(function() {
+        var newFor = $(this).attr('for').replace('-' + (total-1) + '-','-' + total + '-');
+        $(this).attr('for', newFor);
+      });
+      total++;
+      $('#id_' + type + '-TOTAL_FORMS').val(total);
+      $(selector).after(newElement);
+    }
+
+    function del_row(element){
+      //hide row
+      element.parentNode.parentNode.classList.add("hidden");
+
+      //mark row as deleted
+      element.parentNode.getElementsByTagName("input")[0].checked = true;
+    }
+  </script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      // prevent default for enter
+      $(window).keydown(function(event){
+        if(event.keyCode == 13 || event.keyCode == 40 || event.keyCode == 38) {
+          event.preventDefault();
+          return false;
+        }
+      });
+
+      $table_fields=$(".form-control");
+		  $('tr > td > select').select2();
+    });
+
+    //KEYBOARD EVENT CODES
+    // 13=enter
+    // 37=left arrow
+    // 38=up arrow
+    // 39=right arrow
+    // 40=down arrow
+    var max_col=6
+
+    $(document).on('keydown', 'input.form-control', function(event) {
+      var element="input.form-control:not(:hidden)"  
+        switch(event.keyCode){
+          case 13: 
+          case 40:
+            textboxes = $(element);
+            currentBoxNumber = textboxes.index(this);
+            
+            if (textboxes[currentBoxNumber + max_col] != null) {
+                nextBox = textboxes[currentBoxNumber + max_col];
+                nextBox.focus();
+                nextBox.select();
+            }
+            event.preventDefault();
+            return false;
+            break;
+          case 38:
+            textboxes = $(element);
+            currentBoxNumber = textboxes.index(this);
+            
+            if (textboxes[currentBoxNumber - max_col] != null) {
+                nextBox = textboxes[currentBoxNumber - max_col];
+                nextBox.focus();
+                nextBox.select();
+            }
+            event.preventDefault();
+            return false;
+            break;
+          case 37:
+            textboxes = $(element);
+            currentBoxNumber = textboxes.index(this);
+            
+            if (textboxes[currentBoxNumber - 1] != null) {
+                nextBox = textboxes[currentBoxNumber - 1];
+                nextBox.focus();
+                nextBox.select();
+            }
+            event.preventDefault();
+            return false;
+            break;
+          case 39:
+            textboxes = $(element);
+            currentBoxNumber = textboxes.index(this);
+            
+            if (textboxes[currentBoxNumber + 1] != null) {
+                nextBox = textboxes[currentBoxNumber + 1];
+                nextBox.focus();
+                nextBox.select();
+            }
+            event.preventDefault();
+            return false;
+            break;
+        }
+    });
+  </script>
+{% endblock %}

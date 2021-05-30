@@ -1,0 +1,48 @@
+{% extends 'inventory/main.html' %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md">
+		<div class="card card-body">
+            <h3>Seller</h3>
+            <form method="get">
+                {{myFilter.form}}
+                <button class="btn btn-primary" type="submit">Search</button>
+              </form>
+        </div>
+        <!-- 		Hidden Form to apply filters to pdf -->
+		<form method="post" action="{% url 'pdf_order' %}" target="_blank">
+			{% csrf_token %}
+			<input type="hidden" name="order_id" value="{{order_id}}">
+			<input type="hidden" name="status" value="{{status}}">
+			<input type="submit" class="btn btn-secondary float-right" value="Export PDF">
+		</form>
+        
+        <br>
+        <br>
+			<a class="btn btn-primary btn-sm btn-block" href="{% url 'create_seller' %}">Create Seller</a>
+			<div class="card card-body">
+			<table class="table table-sm">
+				<tr>
+					<th></th>
+					<th>Name</th>
+					<th>Contact Number</th>
+				</tr>
+				{% for seller in sellers %}
+					<tr>
+                        <td><a class="btn btn-sm btn-outline-info" href="{% url 'seller_order' seller.user_id %}">View</a></td>
+						<td>{{seller.user}}</td>
+						<td>{{seller.phone}}</td>
+					</tr>
+
+				{% endfor %}
+
+			</table>
+			{% include 'inventory/pagination.html' with page_obj=sellers request=request only%}
+			</div>
+	</div>
+
+	
+
+</div>
+{% endblock content %}

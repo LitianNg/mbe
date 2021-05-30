@@ -1,0 +1,76 @@
+{% extends 'inventory/main.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md">
+        <div class="card card-body">
+            <h3>Order</h3>
+            <form method="get">
+                {{myFilter.form}}
+                <button class="btn btn-primary" type="submit">Search</button>
+              </form>
+        </div>
+        <!-- 		Hidden Form to apply filters to pdf -->
+		<form method="post" action="{% url 'pdf_order' %}" target="_blank">
+			{% csrf_token %}
+			<input type="hidden" name="order_id" value="{{order_id}}">
+			<input type="hidden" name="status" value="{{status}}">
+			<input type="submit" class="btn btn-secondary float-right" value="Export PDF">
+		</form>
+        
+        <br>
+        <br>
+        <a class="btn btn-primary  btn-sm btn-block" href="{% url 'create_order' %}">Create Order</a>
+        <div class="card card-body">
+            
+            <table class="table table-sm">
+                <tr>
+                    <th>Date</th>
+                    <th>Order ID</th>
+                    <th>Seller</th>
+                    <th>Codes</th>
+                    <th>Products</th>
+                    <th>Location</th>
+                    <th>Rack</th>
+                    <th>Pallet</th>
+                    <th>Qty</th>
+                    <th>Platform</th>
+                    <th>AWB</th>
+                    <th>Courier</th>
+                    <th>Remarks</th>
+                    <th>Status</th>
+                    <th>Update</th>
+                    <th>Delete</th>
+                </tr>
+                {% for order in orders %}
+                <tr>
+                    <td>{{order.date_created}}</td>
+                    <td>{{order.order_id}}</td>
+                    <td>{{order.seller}}</td>
+                    <td>{{order.product.sku_code}}</td>
+                    <td>{{order.product.product_name}}</td>
+                    <td>{{order.product.location}}</td>
+                    <td>{{order.product.rack}}</td>
+                    <td>{{order.product.pallet}}</td>
+                    <td>{{order.order_quantity}}</td>
+                    <td>{{order.platform}}</td>
+                    <td>{{order.awb}}</td>
+                    <td>{{order.courier}}</td>
+                    <td>{{order.remarks}}</td>
+                    <td>{{order.status}}</td>
+                    <td><a class="btn btn-sm btn-info" href="{% url 'update_order' order.order_id %}">Update</a></td>
+                    {% if order.status == "Pending" %}
+                    <td><a class="btn btn-sm btn-danger" href="{% url 'delete_order' order.order_id %}">Delete</a></td>
+                    {% else %}
+                    <td></td>
+                    {% endif %}
+                </tr>
+
+                {% endfor %}
+
+            </table>
+            {% include 'inventory/pagination.html' with page_obj=orders request=request only%}
+        </div>
+    </div>
+</div>
+{% endblock content %}

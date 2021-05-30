@@ -1,0 +1,58 @@
+{% extends 'inventory/main.html' %}
+
+{% block content %}
+
+
+<div class="row">
+	<div class="col-md">
+
+		<div class="card card-body">
+            <h3>Logs</h3>
+            <form method="get">
+                {{myFilter.form}}
+                <button class="btn btn-primary" type="submit">Search</button>
+            </form>
+		</div>
+		<!-- 		Hidden Form to apply filters to pdf -->
+		<form method="post" action="{% url 'pdf_log' %}" target="_blank">
+			{% csrf_token %}
+			<input type="hidden" name="action" value="{{action}}">
+			<input type="hidden" name="record_product" value="{{record_product}}">
+			<input type="submit" class="btn btn-secondary float-right" value="Export PDF">
+		</form>
+        
+		<br>
+		<br>
+		<div class="card card-body">
+			<table class="table">
+				<tr>
+					<th>Date</th>
+					<th>User</th>
+                    <th>Action</th>
+                    <th>Product</th>
+					<th>Quantity Changes</th>
+					<th>Current Quantity</th>
+					<th>Reason</th>
+				</tr>
+
+				{% for log in logs %}
+				<tr>
+                    <td>{{log.date_created}}</td>
+                    <td>{{log.user}}</td>
+                    <td>{{log.action}}</td>
+                    <td>{{log.record_product}}</td>
+                    <td>{{log.qty}}</td>
+                    <td>{{log.current_qty}}</td>
+                    <td>{{log.reason}}</td>
+				</tr>
+
+				{% endfor %}
+
+			</table>
+			{% include 'inventory/pagination.html' with page_obj=logs request=request only%}
+		</div>
+	</div>
+
+</div>
+
+{% endblock content %}
