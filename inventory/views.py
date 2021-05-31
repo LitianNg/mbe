@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import SetPasswordForm
 
 #for create multiple form within one form
 from django.forms import inlineformset_factory,formset_factory 
@@ -27,7 +28,6 @@ def home(request):
         if request.user.is_admin:
             page = request.GET.get('page', 1)
 
-            # products = Product.objects.all()
             orders = Order.objects.all()
 
             # paginate results
@@ -42,7 +42,6 @@ def home(request):
         else:
             page = request.GET.get('page', 1)
 
-            # products = Product.objects.filter(seller_id=request.user.id)
             orders = Order.objects.filter(seller_id=request.user.id)
 
             # paginate results
@@ -59,6 +58,7 @@ def home(request):
         return redirect('login/')
 
 @custom_login_required
+@admin_required
 def products(request):
     products = Product.objects.all()
     orders = Order.objects.all()
@@ -88,6 +88,7 @@ def products(request):
     return render(request, 'inventory/products.html', context)
 
 @custom_login_required
+@admin_required
 def orders(request):
     orders = Order.objects.all()
 
@@ -112,6 +113,7 @@ def orders(request):
     return render(request, 'inventory/orders.html', context)
 
 @custom_login_required
+@admin_required
 def seller_order(request, pk):
     seller = Seller.objects.get(user_id=pk)
     orders = seller.order_set.all()
@@ -148,8 +150,8 @@ def seller(request):
     return render(request, 'inventory/seller.html', context)
 
 @custom_login_required
+@admin_required
 def createOrder(request):
-        #form = OrderForm(initial={'status': "Pending"})
     form_num = int(request.GET['form_num']) if (request.method == 'GET' and 'form_num' in request.GET) else 10
     OrderFormSet = formset_factory(OrderForm,extra=form_num,can_delete=True)
     formset = OrderFormSet()
@@ -242,13 +244,15 @@ def createOrder(request):
 
         else:
             for form in formset:
-                print(None)
-                #messages.error(request, form.errors)
+                messages.error(request, form.errors)
     
-    context={'formset': formset}
+    context={
+        'formset': formset, 
+        'nbar': 'orders'}
     return render(request, 'inventory/create_form.html', context)
 
 @custom_login_required
+@admin_required
 def updateOrder(request, pk):
     order = Order.objects.get(order_id=pk)
     form = UpdateOrderForm(instance=order)
@@ -257,13 +261,18 @@ def updateOrder(request, pk):
         form = UpdateOrderForm(request.POST, instance=order)
         if form.is_valid():
             form.save()
-            Outbound.objects.filter(order_id=order.order_id).update(status=form.cleaned_data["status"])
+            status = form.cleaned_data["status"]
+            if status == "Pending":
+                Outbound.objects.filter(order_id=order.order_id).update(status="Approved")
+            else:
+                Outbound.objects.filter(order_id=order.order_id).update(status=form.cleaned_data["status"])
             return redirect('/orders')
 
     context = {'form': form, 'nbar': 'orders'}
     return render(request, 'inventory/form.html', context)
 
 @custom_login_required
+@admin_required
 def deleteOrder(request, pk):
     order = Order.objects.get(order_id=pk)
     products = order.product
@@ -289,6 +298,7 @@ def deleteOrder(request, pk):
     return render(request, 'inventory/delete_order.html', context)
 
 @custom_login_required
+@admin_required
 def createSeller(request):
     form_num = int(request.GET['form_num']) if (request.method == 'GET' and 'form_num' in request.GET) else 10
     CreateSellerFormSet = formset_factory(CreateSellerForm,extra=form_num,can_delete=True)
@@ -311,7 +321,7 @@ def createSeller(request):
 
                         #if username is found in db, give error
                         if seller > 0:
-                            messages.warning(request, f"This username already taken. Please use a different username.", extra_tags="Error for Username: "+input_seller)
+                            messages.warning(request, "This username already taken. Please use a different username.", extra_tags="Error for Username: "+input_seller)
                             seller_exist = True
                         
             #if no errors, save seller information into db, then redirect to sellers
@@ -324,13 +334,15 @@ def createSeller(request):
 
         else:
             for form in formset:
-                print(None)
-                #messages.error(request, form.errors)
+                messages.error(request, form.errors)
     
-    context={'formset': formset}
+    context={
+        'formset': formset,
+        'nbar': 'seller'}
     return render(request, 'inventory/create_form.html', context)
 
 @custom_login_required
+@admin_required
 def deleteSeller(request, pk):
     seller = Seller.objects.get(user_id=pk)
     user = User.objects.get(id=pk)
@@ -344,6 +356,7 @@ def deleteSeller(request, pk):
     return render(request, 'inventory/delete_seller.html', context)
 
 @custom_login_required
+@admin_required
 def updateSeller(request, pk):
     seller = Seller.objects.get(user_id=pk)
     form = SellerForm(instance=seller)
@@ -358,6 +371,25 @@ def updateSeller(request, pk):
     return render(request, 'inventory/form.html', context)
 
 @custom_login_required
+@admin_required
+def resetPw(request, pk):
+    user = User.objects.get(id=pk)
+    form = SetPasswordForm(pk)
+    print(f"form -> {form}")
+    if request.method == "POST":
+        form = SetPasswordForm(user=user, data=request.POST)
+        if form.is_valid():
+            _user = form.save()
+            print(f"User -> {_user}")
+            
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect(f'/seller_order/{_user.id}')
+
+    context = {'form': form, 'nbar': 'seller'}
+    return render(request, 'inventory/form.html', context)
+
+@custom_login_required
+@admin_required
 def createProduct(request):
     form_num = int(request.GET['form_num']) if (request.method == 'GET' and 'form_num' in request.GET) else 10
     ProductFormSet = formset_factory(ProductForm,extra=form_num,can_delete=True)
@@ -427,13 +459,15 @@ def createProduct(request):
             
         else:
             for form in formset:
-                print(None)
-                #messages.error(request, form.errors)
+                messages.error(request, form.errors)
     
-    context={'formset': formset}
+    context={
+        'formset': formset,
+        'nbar': 'products'}
     return render(request, 'inventory/create_form.html', context)
 
 @custom_login_required
+@admin_required
 def updateProduct(request, pk):
     product = Product.objects.get(sku_code=pk)
     initial_seller = product.seller
@@ -472,6 +506,7 @@ def updateProduct(request, pk):
     return render(request, 'inventory/form.html', context)
 
 @custom_login_required
+@admin_required
 def deleteProduct(request, pk):
     product = Product.objects.get(sku_code=pk)
 
@@ -505,6 +540,7 @@ def deleteProduct(request, pk):
     return render(request, 'inventory/delete_product.html', context)
 
 @custom_login_required
+@admin_required
 def editProductQty(request, pk):
     product = Product.objects.get(sku_code=pk)
 
@@ -550,6 +586,7 @@ def editProductQty(request, pk):
     return render(request, 'inventory/form.html', context)
 
 @custom_login_required
+@admin_required
 def listLog(request):
     logs = TransactionProductQty.objects.all()
 
@@ -622,6 +659,8 @@ def inbound(request):
 
     return render(request, 'inventory/inbound.html', context)
 
+@custom_login_required
+@seller_required
 def createInbound(request):
     form_num = int(request.GET['form_num']) if (request.method == 'GET' and 'form_num' in request.GET) else 10
     InboundFormSet = formset_factory(InboundForm,extra=form_num,can_delete=True)
@@ -671,12 +710,15 @@ def createInbound(request):
             
         else:
             for form in formset:
-                print(None)
-                #messages.error(request, form.errors)
+                messages.error(request, form.errors)
     
-    context={'formset': formset}
+    context={
+        'formset': formset,
+        'nbar': 'inbound'}
     return render(request, 'inventory/create_inbound_form.html', context)
 
+@custom_login_required
+@seller_required
 def createNpInbound(request):
     form_num = int(request.GET['form_num']) if (request.method == 'GET' and 'form_num' in request.GET) else 10
     NpInboundFormSet = formset_factory(NpInboundForm,extra=form_num,can_delete=True)
@@ -697,7 +739,6 @@ def createNpInbound(request):
                     product_quantity = form.cleaned_data.get("product_quantity")
                     product_price = form.cleaned_data.get("product_price")
                     if input_npinbound is not None:
-                        # product = Product.objects.filter(sku_code=input_product).count()
                         #if sku_code is found in db, give error
                         if product_quantity <= 0:
                             messages.warning(request, f"Please enter a valid quantity.", extra_tags="Error for product: "+input_product)
@@ -727,29 +768,19 @@ def createNpInbound(request):
                         )
                         new_inbound.save()
 
-                        # input_code = form.save()
-                        # new_log = TransactionProductQty(
-                        #     user=request.user,
-                        #     action="Create",
-                        #     qty=form.cleaned_data["product_quantity"],
-                        #     current_qty=form.cleaned_data["product_quantity"],
-                        #     record_product=form.cleaned_data["sku_code"],
-                        #     reason="Auto-Generate: New Product Created"
-                        # )
-
-                        # new_log.save()
-                        # TransactionProductQty.objects.filter(id=new_log.id).update(product=input_code)
-
                 return redirect('/inbound')
             
         else:
             for form in formset:
-                print(None)
-                #messages.error(request, form.errors)
+                messages.error(request, form.errors)
     
-    context={'formset': formset}
+    context={
+        'formset': formset,
+        'nbar': 'inbound'}
     return render(request, 'inventory/create_np_inbound_form.html', context)
 
+@custom_login_required
+@admin_required
 def approveInbound(request, pk):
     inbound = Inbound.objects.get(id=pk)
     
@@ -760,9 +791,6 @@ def approveInbound(request, pk):
     }
 
     if request.method == "POST":
-        # inbound_pk = request.POST.get('inbound_pk')
-        # post_inbound = Inbound.objects.get(id=inbound_pk)
-
         if(inbound.sku_code is not None):
             product = Product.objects.get(sku_code = inbound.sku_code)
             total_quantity = product.product_quantity + inbound.product_quantity
@@ -817,6 +845,8 @@ def approveInbound(request, pk):
             context['form'] = UpdateNpInboundForm()
         return render(request, "inventory/inbound_confirmation.html", context)
 
+@custom_login_required
+@admin_required
 def rejectInbound(request, pk):
     inbound = Inbound.objects.get(id=pk)
 
@@ -835,6 +865,7 @@ def rejectInbound(request, pk):
 
     return render(request, 'inventory/inbound_confirmation.html', context)
 
+@custom_login_required
 def render_to_pdf(template_src, context_dict={}):
     template = get_template(template_src)
     html = template.render(context_dict)
@@ -892,6 +923,8 @@ def outbound(request):
     
     return render(request, 'inventory/outbound.html', context)
 
+@custom_login_required
+@seller_required
 def createOutbound(request):
     form_num = int(request.GET['form_num']) if (request.method == 'GET' and 'form_num' in request.GET) else 10
     OutboundFormSet = formset_factory(OutboundForm,extra=form_num,can_delete=True)
@@ -954,34 +987,19 @@ def createOutbound(request):
                             product = input_outbound,
                         )
                         new_outbound.save()
-                        #products = Product.objects.get(sku_code=input_code)
-                        #products.product_quantity -= input_quantity
-                        #products.save()
-                        #form = form.save(commit=False)
-                        #form.seller = outbound.seller
-                        #form.save()
-
-                        #new_log = TransactionProductQty(
-                        #    user=request.user,
-                        #    action="Create",
-                        #    qty=input_quantity,
-                        #   current_qty=products.product_quantity,
-                        #    record_product=input_code,
-                        #    reason="Auto-Generate: New Order Created"
-                        #)
-                        #new_log.save()
-                        #TransactionProductQty.objects.filter(id=new_log.id).update(product=input_code)
-                    
                 return redirect('/outbound')
 
         else:
             for form in formset:
-                print(None)
-                #messages.error(request, form.errors)
+                messages.error(request, form.errors)
     
-    context={'formset': formset}
+    context={
+        'formset': formset,
+        'nbar':'outbound'}
     return render(request, 'inventory/createOutbound_form.html', context)
 
+@custom_login_required
+@admin_required
 def approveOutbound(request, pk):
     outbound = Outbound.objects.get(id=pk)
 
@@ -1028,6 +1046,8 @@ def approveOutbound(request, pk):
             context['form'] = ApproveOutboundForm()
         return render(request, "inventory/outbound_confirmation.html", context)
 
+@custom_login_required
+@admin_required
 def rejectOutbound(request, pk):
     outbound = Outbound.objects.get(id=pk)
 
@@ -1066,6 +1086,16 @@ class PDFOrder(View):
             }
 
         pdf = render_to_pdf('inventory/pdf_template_orders.html', data)
+        return HttpResponse(pdf, content_type='application/pdf')
+
+class PDFSeller(View):
+    def post(self, request):
+        myFilter = SellerFilter(request.POST, queryset=Seller.objects.all())
+        data = {
+            "sellers": myFilter.qs
+            }
+
+        pdf = render_to_pdf('inventory/pdf_template_sellers.html', data)
         return HttpResponse(pdf, content_type='application/pdf')
 
 class PDFLog(View):

@@ -8,7 +8,7 @@ from django.db import transaction
 class CreateSellerForm(UserCreationForm):
     name = forms.CharField(label='Name', max_length=200)
     phone = forms.CharField(label='Phone', max_length=11)
-    email = forms.CharField(label='Email', max_length=200)
+    email = forms.EmailField(label='Email', max_length=200)
     
     class Meta(UserCreationForm.Meta):
         model = User
@@ -26,19 +26,11 @@ class CreateSellerForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         user.save()
         seller = Seller.objects.create(user=user)
-        # seller.user = user
-        # print(seller.name)
-        # print("========================================================")
+
         seller.name = self.cleaned_data['name']
         seller.phone = self.cleaned_data['phone']
         seller.email = self.cleaned_data['email']
-        # print(self.cleaned_data['name'])
-        # print(seller.name)
-        # print("========================================================")
-        # print(seller)
-        # print("========================================================")
-        # print(self.cleaned_data)
-        # print("========================================================")
+
         seller.save()
         return user
 
@@ -71,7 +63,7 @@ class SellerForm(ModelForm):
         user.email = self.instance.email
         user.save()
         return user
-    
+
 class ProductForm(ModelForm):
     class Meta:
         model = Product
@@ -85,8 +77,6 @@ class ProductForm(ModelForm):
         
 class EditProductQtyForm(ModelForm):
     class Meta:
-        #model = Product
-        #fields = ['product_quantity']
         model = TransactionProductQty
         fields = ['qty', 'reason',]
 

@@ -9,7 +9,8 @@
 		<div class="card card-body">
 			<h5>{{seller.name}}</h5>
 			<hr>
-			<a class="btn btn-outline-info  btn-sm btn-block" href="{% url 'update_seller' seller.user_id %}">Update Seller</a>
+			<a class="btn btn-outline-info  btn-sm btn-block" href="{% url 'update_seller' seller.user_id %}">Update Seller Info</a>
+			<a class="btn btn-outline-info  btn-sm btn-block" href="{% url 'reset_pw' seller.user_id %}">Reset Password</a>
 			<a class="btn btn-outline-danger  btn-sm btn-block" href="{% url 'delete_seller' seller.user_id %}">Delete Seller</a>
 
 		</div>

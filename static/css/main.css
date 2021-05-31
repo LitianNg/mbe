@@ -32,9 +32,6 @@ body {
 .select2-selection__arrow{
   top: 3px !important;
 }
-/* #select2-data-42-hflk .select2-container {
-  width: 160px !important;
-} */
 .input-table > tbody > tr > td > .btn-danger {
   padding: 0.45rem 0.35rem;
 }

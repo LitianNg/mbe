@@ -11,7 +11,7 @@
               </form>
         </div>
         <!-- 		Hidden Form to apply filters to pdf -->
-		<form method="post" action="{% url 'pdf_order' %}" target="_blank">
+		<form method="post" action="{% url 'pdf_seller' %}" target="_blank">
 			{% csrf_token %}
 			<input type="hidden" name="order_id" value="{{order_id}}">
 			<input type="hidden" name="status" value="{{status}}">
@@ -27,12 +27,14 @@
 					<th></th>
 					<th>Name</th>
 					<th>Contact Number</th>
+					<th>Email</th>
 				</tr>
 				{% for seller in sellers %}
 					<tr>
                         <td><a class="btn btn-sm btn-outline-info" href="{% url 'seller_order' seller.user_id %}">View</a></td>
 						<td>{{seller.user}}</td>
 						<td>{{seller.phone}}</td>
+						<td>{{seller.email}}</td>
 					</tr>
 
 				{% endfor %}
