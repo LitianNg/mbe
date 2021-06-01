@@ -280,6 +280,7 @@ def deleteOrder(request, pk):
     if request.method == "POST":
         products.product_quantity += order.order_quantity
         products.save()
+        Outbound.objects.filter(order_id=order.order_id).update(status="Deleted")
         order.delete()
         new_log = TransactionProductQty(user=request.user,
                                         action="Order",
@@ -484,17 +485,6 @@ def updateProduct(request, pk):
 
             form.save()
 
-            new_log = TransactionProductQty(user=request.user,
-                                            action="Update",
-                                            qty=form.cleaned_data["product_quantity"],
-                                            current_qty=form.cleaned_data["product_quantity"],
-                                            record_product=pk,
-                                            reason=f"Auto-Generate: Quantity change from {initial_qty} to {form.cleaned_data['product_quantity']}")
-
-            new_log.save()
-            TransactionProductQty.objects.filter(
-                id=new_log.id).update(product=pk)
-
             return redirect('/products')
 
         else:
@@ -515,7 +505,7 @@ def deleteProduct(request, pk):
                     product_name = product.product_name,
                     sku_code = product.sku_code,
                     unit = product.unit,
-                    product_quantity = product.product_quantity,
+                    product_quantity = 0 - product.product_quantity,
                     product_price = product.product_price,
                     remarks = f'Admin deleted the product',
                     status = "Approved",

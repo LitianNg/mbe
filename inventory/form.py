@@ -84,7 +84,7 @@ class UpdateProductForm(ModelForm):
     class Meta:
         model = Product
         fields = '__all__'
-        exclude = ('sku_code',)     
+        exclude = ('sku_code', 'product_quantity',)     
 
 class UserLoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
